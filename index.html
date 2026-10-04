@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>geekslab</title>
+<meta name="description" content="geekslab by Dhaval — tech and AI explained in Gujarati, balanced between nature and the future.">
+<meta property="og:title" content="geekslab">
+<meta property="og:description" content="Tech and AI explained in Gujarati. Nature on one side, the future on the other, balanced in the centre.">
+<meta name="theme-color" content="#14102E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,100&family=Chakra+Petch:wght@400;600;700&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --moss:#24402A;
+    --sage:#DCE6CC;
+    --lichen:#A9BE7B;
+    --ink:#14102E;
+    --neon:#FF3DAE;
+    --ice:#53E3FF;
+    --gold:#E7B24A;
+    --split:50;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--ink);color:var(--sage);font-family:"Fraunces",Georgia,serif;font-size:1.125rem;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:2px}
+
+  /* ---------- HERO: the split ---------- */
+  .hero{position:relative;height:100svh;min-height:560px;overflow:hidden;cursor:ew-resize;touch-action:pan-y;user-select:none}
+  .half{position:absolute;inset:0;display:grid;place-items:center}
+  .nature{background:var(--sage);color:var(--moss);clip-path:inset(0 calc(100% - var(--split)*1%) 0 0)}
+  .cyber{background:var(--ink);color:var(--ice);clip-path:inset(0 0 0 calc(var(--split)*1%))}
+  .nature::before{content:"";position:absolute;inset:0;opacity:.55;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23A9BE7B' stroke-width='1.2'%3E%3Cpath d='M-20 120C80 60 180 180 300 110S520 40 620 130'/%3E%3Cpath d='M-20 170C90 110 190 230 300 160S520 90 620 180'/%3E%3Cpath d='M-20 220C100 160 200 280 300 210S520 140 620 230'/%3E%3Cpath d='M-20 330C80 280 220 400 320 330S520 270 620 340'/%3E%3Cpath d='M-20 380C90 330 230 450 320 380S520 320 620 390'/%3E%3Cpath d='M-20 490C120 430 210 560 330 490S520 440 620 500'/%3E%3Cpath d='M-20 540C120 480 210 610 330 540S520 490 620 550'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:600px 600px}
+  .cyber::before{content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(0deg,rgba(83,227,255,.06) 0 1px,transparent 1px 4px),
+      linear-gradient(rgba(255,61,174,.16) 1px,transparent 1px) 0 0/48px 48px,
+      linear-gradient(90deg,rgba(255,61,174,.16) 1px,transparent 1px) 0 0/48px 48px;
+    mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 80%,transparent)}
+  .word{position:relative;font-size:clamp(4rem,17vw,15rem);line-height:.9;letter-spacing:-.02em;white-space:nowrap}
+  .nature .word{font-family:"Fraunces",serif;font-weight:400;font-variation-settings:"SOFT" 100,"opsz" 144;font-style:italic}
+  .cyber .word{font-family:"Chakra Petch",sans-serif;font-weight:700;letter-spacing:-.03em;text-shadow:3px 0 0 var(--neon),-3px 0 0 rgba(83,227,255,.5)}
+  .tag{position:absolute;bottom:clamp(5rem,14vh,8rem);font-size:clamp(.95rem,1.6vw,1.15rem);max-width:22ch}
+  .nature .tag{left:clamp(1rem,5vw,4rem);font-style:italic}
+  .cyber .tag{right:clamp(1rem,5vw,4rem);text-align:right;font-family:"Chakra Petch",sans-serif;color:var(--neon)}
+
+  .seam{position:absolute;top:0;bottom:0;left:calc(var(--split)*1%);width:0;pointer-events:none;z-index:3}
+  .seam::before{content:"";position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--gold);box-shadow:0 0 18px rgba(231,178,74,.7)}
+  .mark{position:absolute;top:clamp(1.25rem,4vh,2.5rem);left:0;transform:translateX(-50%);
+    background:var(--gold);color:var(--ink);font-family:"Tiro Devanagari Sanskrit",serif;font-size:1.25rem;
+    padding:.35rem 1rem .2rem;border-radius:999px;white-space:nowrap}
+  .hint{position:absolute;bottom:1.5rem;left:0;transform:translateX(-50%);font-family:"Chakra Petch",sans-serif;
+    font-size:.85rem;color:var(--ink);background:var(--gold);padding:.3rem .8rem;border-radius:999px;white-space:nowrap;transition:opacity .6s}
+  .hero.touched .hint{opacity:0}
+
+  /* ---------- BODY ---------- */
+  main{position:relative}
+  section{padding:clamp(4rem,10vw,8rem) clamp(1rem,6vw,5rem)}
+  .wrap{max-width:68rem;margin:0 auto}
+  h2{font-weight:500;font-size:clamp(2rem,5vw,3.5rem);line-height:1.08;letter-spacing:-.01em;font-variation-settings:"opsz" 144;max-width:18ch}
+  p{max-width:60ch}
+  .meaning{background:var(--sage);color:var(--moss)}
+  .meaning .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:end}
+  .sanskrit{font-family:"Tiro Devanagari Sanskrit",serif;font-size:clamp(3rem,9vw,6.5rem);line-height:1;color:var(--moss)}
+  .meaning p+p{margin-top:1rem}
+  .gloss{font-style:italic;margin-top:.5rem;color:#4E6B44}
+
+  .make h2{color:var(--sage)}
+  .rows{margin-top:clamp(2.5rem,5vw,4rem);border-top:1px solid rgba(220,230,204,.2)}
+  .row{display:grid;grid-template-columns:minmax(10rem,1fr) 2fr;gap:2rem;padding:1.75rem 0;border-bottom:1px solid rgba(220,230,204,.2)}
+  .row h3{font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:1.3rem;color:var(--ice)}
+  .row.green h3{font-family:"Fraunces",serif;font-style:italic;font-weight:500;color:var(--lichen)}
+  .row p{color:rgba(220,230,204,.82)}
+
+  .cta{background:linear-gradient(90deg,var(--sage) 0 50%,var(--ink) 50% 100%);padding:0}
+  .cta .inner{display:grid;grid-template-columns:1fr 1fr}
+  .cta .side{padding:clamp(4rem,9vw,7rem) clamp(1rem,5vw,4rem)}
+  .cta .left{color:var(--moss)}
+  .cta .right{color:var(--sage)}
+  .cta h2{font-size:clamp(1.8rem,4vw,2.8rem)}
+  .cta p{margin:1rem 0 2rem}
+  .btn{display:inline-block;text-decoration:none;font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:1.05rem;padding:.9rem 1.6rem;border-radius:999px;transition:transform .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.moss{background:var(--moss);color:var(--sage)}
+  .btn.neon{background:var(--neon);color:var(--ink)}
+
+  footer{padding:2rem clamp(1rem,6vw,5rem);font-family:"Chakra Petch",sans-serif;font-size:.9rem;color:rgba(220,230,204,.6);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+
+  @media (max-width:760px){
+    .meaning .grid,.cta .inner{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr;gap:.5rem}
+    .cta{background:none}
+    .cta .left{background:var(--sage)}
+    .cta .right{background:var(--ink)}
+    .tag{bottom:5.5rem;max-width:15ch;font-size:.9rem}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.hint{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="hero" id="hero" aria-label="geekslab — nature and future, balanced in the centre">
+  <div class="half nature" aria-hidden="true">
+    <span class="word">geekslab</span>
+    <p class="tag">Rooted in nature, slow, curious, human.</p>
+  </div>
+  <div class="half cyber">
+    <h1 class="word">geekslab</h1>
+    <p class="tag">Wired for the future: tech and AI, explained in Gujarati.</p>
+  </div>
+  <div class="seam" aria-hidden="true">
+    <span class="mark">स्थितप्रज्ञ</span>
+    <span class="hint">Drag to shift the balance</span>
+  </div>
+</header>
+
+<main>
+  <section class="meaning">
+    <div class="wrap grid">
+      <div>
+        <div class="sanskrit" lang="sa">स्थितप्रज्ञ</div>
+        <p class="gloss">sthitaprajna: one whose mind stays steady</p>
+      </div>
+      <div>
+        <h2>Two halves. One steady centre.</h2>
+        <p style="margin-top:1.25rem">One side of geekslab is plants, soil and slow mornings. The other is AI, gadgets and whatever ships next week. I don't pick a side. I try to stand in the middle and stay calm while the world speeds up.</p>
+        <p>Let go of the seam above and watch where it settles.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="make">
+    <div class="wrap">
+      <h2>What you'll find on the channel</h2>
+      <div class="rows">
+        <div class="row"><h3>Tech Dayro</h3><p>This week's tech news, told the way we talk at a dayro. Gujarati, fast, no jargon.</p></div>
+        <div class="row"><h3>AI tools you can use today</h3><p>Hands-on walkthroughs of the AI tools I teach my students, so you can try them the same evening.</p></div>
+        <div class="row"><h3>Behind the hype</h3><p>What a launch or a viral claim actually means for you, and what it doesn't.</p></div>
+        <div class="row green"><h3>Nature &amp; balance</h3><p>The other half. Slower stories about plants, attention and staying steady.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="inner">
+      <div class="side left">
+        <h2>Come say hi</h2>
+        <p>New reels every week on Instagram.</p>
+        <a class="btn moss" href="https://instagram.com/geekslab" target="_blank" rel="noopener">Follow @geekslab</a>
+      </div>
+      <div class="side right">
+        <h2>Work with geekslab</h2>
+        <p>Brand collabs, product launches and AI workshops for your team.</p>
+        <a class="btn neon" href="https://ig.me/m/geekslab" target="_blank" rel="noopener">Message me on Instagram</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>geekslab, by Dhaval. Surat, Gujarat.</span>
+  <span>© <span id="yr">2026</span></span>
+</footer>
+
+<script>
+(function(){
+  const hero = document.getElementById('hero');
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  if (reduce) return;                       // stays balanced at 50
+  let target = 50, current = 50, raf = null;
+  function tick(){
+    current += (target - current) * 0.12;
+    root.style.setProperty('--split', current.toFixed(2));
+    if (Math.abs(target - current) > 0.05) raf = requestAnimationFrame(tick); else raf = null;
+  }
+  function go(){ if (!raf) raf = requestAnimationFrame(tick); }
+  function setFrom(x){
+    const r = hero.getBoundingClientRect();
+    target = Math.min(92, Math.max(8, (x - r.left) / r.width * 100));
+    hero.classList.add('touched'); go();
+  }
+  hero.addEventListener('pointermove', e => setFrom(e.clientX));
+  hero.addEventListener('pointerdown', e => setFrom(e.clientX));
+  // let go and it returns to the centre: sthitaprajna
+  ['pointerleave','pointerup','pointercancel'].forEach(t =>
+    hero.addEventListener(t, e => { if (t !== 'pointerup' || e.pointerType !== 'mouse') { target = 50; go(); } }));
+  // keyboard: arrow keys nudge, Home re-centres
+  hero.tabIndex = 0;
+  hero.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { target = Math.max(8, target - 6); go(); }
+    else if (e.key === 'ArrowRight') { target = Math.min(92, target + 6); go(); }
+    else if (e.key === 'Home') { target = 50; go(); }
+  });
+})();
+</script>
+</body>
+</html>
