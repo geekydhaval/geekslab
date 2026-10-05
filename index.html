@@ -73,6 +73,7 @@
     background:var(--gold);color:var(--ink);padding:.4rem .7rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .15s}
   .dock .app:hover::after,.dock .app:focus-visible::after{opacity:1}
   .dock .soon{cursor:default}
+  body:has(.dock .app:hover) .hint,body:has(.dock .app:focus-visible) .hint{opacity:0}
 
   /* ---------- BODY ---------- */
   main{position:relative}
