@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mind Pulse: turn your keyboard into light</title>
+<meta name="description" content="Mind Pulse is an iPad app that listens to your keyboard and paints every note in light. Six themes, crazy mode, microphone or MIDI cable.">
+<meta property="og:title" content="Mind Pulse">
+<meta property="og:description" content="Play a note, see it bloom. An iPad app that turns your keyboard into a light show.">
+<meta property="og:image" content="https://geekslab.co.in/mind-pulse/shots/cyberpunk.jpg">
+<meta name="theme-color" content="#05040C">
+<link rel="icon" href="../assets/mind-pulse.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,100&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero" id="hero">
+  <canvas id="stage" aria-hidden="true"></canvas>
+  <div class="bar">
+    <a href="../">&larr; geekslab</a>
+    <nav aria-label="On this page">
+      <a href="#themes">Themes</a>
+      <a href="privacy/">Privacy</a>
+      <a href="support/">Support</a>
+    </nav>
+  </div>
+  <div class="intro">
+    <img class="icon" src="../assets/mind-pulse.png" alt="" width="256" height="256">
+    <h1>Mind Pulse</h1>
+    <p class="sub">Turn your keyboard into light.</p>
+    <span class="pill">For iPad. Coming soon to the App Store.</span>
+  </div>
+  <p class="hint">Tap anywhere, or press any key</p>
+</header>
+
+<main>
+  <section class="themes" id="themes">
+    <div class="wrap">
+      <h2>Play a note. See it bloom.</h2>
+      <p class="lede">Stand your iPad on the music stand and play. Every key has its own colour. Low notes are big and slow, high notes are small and quick, and the harder you play the brighter they get.</p>
+      <div class="grid">
+        <figure><img src="shots/pulse.jpg" alt="Coloured rings spreading across a black screen" loading="lazy" width="825" height="1100"><figcaption><h3>Pulse</h3><p>Rings of light spreading from every note.</p></figcaption></figure>
+        <figure><img src="shots/cyberpunk.jpg" alt="Neon wave lines over a glowing pink grid" loading="lazy" width="825" height="1100"><figcaption><h3>Cyberpunk</h3><p>Neon waves racing over a glowing grid.</p></figcaption></figure>
+        <figure><img src="shots/orbit.jpg" alt="Glowing dots circling a bright centre" loading="lazy" width="825" height="1100"><figcaption><h3>Orbit</h3><p>Notes circling a bright core.</p></figcaption></figure>
+        <figure><img src="shots/playful.jpg" alt="Bright stars, hearts and smiley stickers with confetti" loading="lazy" width="825" height="1100"><figcaption><h3>Playful</h3><p>Stars, hearts and smiley stickers with confetti.</p></figcaption></figure>
+        <figure><img src="shots/fireworks.jpg" alt="Fireworks bursting in a night sky" loading="lazy" width="825" height="1100"><figcaption><h3>Fireworks</h3><p>Rockets that climb and burst.</p></figcaption></figure>
+        <figure><img src="shots/garden.jpg" alt="A row of glowing flowers on tall stems" loading="lazy" width="825" height="1100"><figcaption><h3>Garden</h3><p>Flowers that grow as you play.</p></figcaption></figure>
+      </div>
+      <div class="crazy">
+        <h3>Crazy mode</h3>
+        <p>Switch it on and the theme changes by itself while you play.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ways">
+    <div class="wrap">
+      <h2>Three ways to play</h2>
+      <div class="rows">
+        <div class="row"><h3>Just play</h3><p>Mind Pulse hears your keyboard or piano through the iPad's microphone. Nothing to plug in.</p></div>
+        <div class="row"><h3>Plug in</h3><p>Connect a MIDI keyboard by USB cable and every note and chord shows up exactly as you play it.</p></div>
+        <div class="row"><h3>Touch</h3><p>No keyboard nearby? Touch the screen and play it with your fingers.</p></div>
+      </div>
+      <p class="note">Good to know: through the microphone, single notes are picked up best. Big chords and very soft playing work better with a cable.</p>
+    </div>
+  </section>
+
+  <section class="private">
+    <div class="wrap grid">
+      <p class="big">Your sound stays on your iPad.</p>
+      <div>
+        <p>Mind Pulse listens only to work out which notes you are playing. Sound is analysed on your iPad, in the moment. It is never recorded, saved or sent anywhere.</p>
+        <p>No account, no ads, no tracking. The app does not connect to the internet.</p>
+        <a class="btn moss" href="privacy/">Read the privacy policy</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Need a hand?</h2>
+      <p class="lede">Answers to the common questions are on the support page, along with a way to reach me.</p>
+      <a class="btn neon" href="support/">Go to support</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Mind Pulse, by geekslab. Surat, Gujarat.</span>
+  <nav aria-label="Mind Pulse pages"><a href="privacy/">Privacy policy</a><a href="support/">Support</a><a href="../">geekslab</a></nav>
+</footer>
+
+<script>
+// The top of the page works like the app's Pulse theme: every tap or key press is a note.
+(function(){
+  const hero = document.getElementById('hero'), canvas = document.getElementById('stage'), ctx = canvas.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const life = 3200;
+  let notes = [], width = 0, height = 0, frame = null, lastPlayed = -4000;
+
+  function fit(){
+    const ratio = Math.min(devicePixelRatio || 1, 2);
+    width = canvas.clientWidth; height = canvas.clientHeight;
+    canvas.width = width * ratio; canvas.height = height * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  // Left is low, right is high. Twelve colours, one per note, repeating up the keyboard.
+  function play(x, y, force){
+    notes.push({ x, y, force, hue: Math.floor(x / width * 36) % 12 * 30, born: performance.now() });
+    if (notes.length > 40) notes.shift();
+    if (!frame) frame = requestAnimationFrame(draw);
+  }
+  function draw(now){
+    ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = 'lighter';
+    notes = notes.filter(n => now - n.born < life);
+    for (const n of notes){
+      const age = (now - n.born) / 1000;
+      const reach = Math.min(width, height) * (0.08 + 0.16 * n.force);
+      const glow = reach * (0.6 + age);
+      const light = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glow);
+      light.addColorStop(0, 'hsla(' + n.hue + ',90%,65%,' + 0.8 * Math.exp(-4 * age) + ')');
+      light.addColorStop(1, 'hsla(' + n.hue + ',90%,65%,0)');
+      ctx.fillStyle = light;
+      ctx.beginPath(); ctx.arc(n.x, n.y, glow, 0, 7); ctx.fill();
+      for (let ring = 0; ring < 3; ring++){
+        const time = age - ring * 0.16;
+        if (time <= 0) continue;
+        const fade = Math.pow(Math.max(1 - time / (life / 1000 - ring * 0.16), 0), 2);
+        ctx.strokeStyle = 'hsla(' + n.hue + ',90%,65%,' + fade * (0.95 - 0.25 * ring) + ')';
+        ctx.lineWidth = 1.5 + 3 * fade * n.force;
+        ctx.beginPath(); ctx.arc(n.x, n.y, reach * (1 - Math.exp(-2.4 * time)) * (1 + 0.4 * ring), 0, 7); ctx.stroke();
+      }
+    }
+    frame = notes.length ? requestAnimationFrame(draw) : null;
+  }
+  function inView(){ return scrollY < height * 0.8; }
+
+  fit();
+  addEventListener('resize', fit);
+  hero.addEventListener('pointerdown', e => {
+    const box = canvas.getBoundingClientRect();
+    lastPlayed = performance.now(); hero.classList.add('played');
+    play(e.clientX - box.left, e.clientY - box.top, 0.4 + 0.6 * (1 - (e.clientY - box.top) / height));
+  });
+  addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1 || e.key === ' ' || !inView()) return;
+    lastPlayed = performance.now(); hero.classList.add('played');
+    play((e.key.toLowerCase().charCodeAt(0) % 36 + 0.5) / 36 * width, height * (0.25 + 0.4 * Math.random()), 0.5 + 0.5 * Math.random());
+  });
+  // Left alone, it plays itself quietly. Not for people who asked for less motion.
+  if (!reduce) setInterval(() => {
+    if (document.hidden || !inView() || performance.now() - lastPlayed < 4000) return;
+    play(width * (0.1 + 0.8 * Math.random()), height * (0.2 + 0.45 * Math.random()), 0.3 + 0.6 * Math.random());
+  }, 1100);
+})();
+</script>
+</body>
+</html>
