@@ -54,9 +54,25 @@
   .mark{position:absolute;top:clamp(1.25rem,4vh,2.5rem);left:0;transform:translateX(-50%);
     background:var(--gold);color:var(--ink);font-family:"Tiro Devanagari Sanskrit",serif;font-size:1.25rem;
     padding:.35rem 1rem .2rem;border-radius:999px;white-space:nowrap}
-  .hint{position:absolute;bottom:1.5rem;left:0;transform:translateX(-50%);font-family:"Chakra Petch",sans-serif;
+  .hint{position:absolute;bottom:6.6rem;left:0;transform:translateX(-50%);font-family:"Chakra Petch",sans-serif;
     font-size:.85rem;color:var(--ink);background:var(--gold);padding:.3rem .8rem;border-radius:999px;white-space:nowrap;transition:opacity .6s}
   .hero.touched .hint{opacity:0}
+
+  /* ---------- DOCK: the apps, always at the bottom ---------- */
+  .dock{position:fixed;left:50%;bottom:max(.9rem,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:10;
+    display:flex;align-items:flex-end;gap:.7rem;padding:.6rem .75rem;border-radius:1.6rem;
+    background:rgba(20,16,46,.58);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid rgba(220,230,204,.24);box-shadow:0 14px 44px rgba(0,0,0,.45)}
+  .dock .app{position:relative;display:block;width:3.4rem;height:3.4rem;transform-origin:bottom center;
+    transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+  .dock img{display:block;width:100%;height:100%;border-radius:23%;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+  .dock .app:hover,.dock .app:focus-visible{transform:scale(1.3) translateY(-.15rem)}
+  .dock .app:has(+ .app:hover),.dock .app:hover + .app{transform:scale(1.12)}
+  .dock .app::after{content:attr(data-name);position:absolute;left:50%;bottom:calc(100% + .7rem);transform:translateX(-50%) scale(.77);
+    font-family:"Chakra Petch",sans-serif;font-size:.85rem;font-weight:600;line-height:1;white-space:nowrap;
+    background:var(--gold);color:var(--ink);padding:.4rem .7rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .15s}
+  .dock .app:hover::after,.dock .app:focus-visible::after{opacity:1}
+  .dock .soon{cursor:default}
 
   /* ---------- BODY ---------- */
   main{position:relative}
@@ -89,7 +105,7 @@
   .btn.moss{background:var(--moss);color:var(--sage)}
   .btn.neon{background:var(--neon);color:var(--ink)}
 
-  footer{padding:2rem clamp(1rem,6vw,5rem);font-family:"Chakra Petch",sans-serif;font-size:.9rem;color:rgba(220,230,204,.6);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  footer{padding:2rem clamp(1rem,6vw,5rem) 7rem;font-family:"Chakra Petch",sans-serif;font-size:.9rem;color:rgba(220,230,204,.6);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 
   @media (max-width:760px){
     .meaning .grid,.cta .inner{grid-template-columns:1fr}
@@ -97,9 +113,10 @@
     .cta{background:none}
     .cta .left{background:var(--sage)}
     .cta .right{background:var(--ink)}
-    .tag{bottom:5.5rem;max-width:15ch;font-size:.9rem}
+    .tag{bottom:9.5rem;max-width:15ch;font-size:.9rem}
+    .dock .app{width:3rem;height:3rem}
   }
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.hint{transition:none}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.hint,.dock .app{transition:none}}
 </style>
 </head>
 <body>
@@ -166,6 +183,12 @@
   <span>geekslab, by Dhaval. Surat, Gujarat.</span>
   <span>© <span id="yr">2026</span></span>
 </footer>
+
+<nav class="dock" aria-label="Apps by geekslab">
+  <span class="app soon" data-name="Mercury OS, coming soon" tabindex="0" role="img" aria-label="Mercury OS, coming soon"><img src="assets/mercury-os.png" alt="" width="256" height="256"></span>
+  <a class="app" data-name="Mind Pulse" href="mind-pulse/" aria-label="Mind Pulse"><img src="assets/mind-pulse.png" alt="" width="256" height="256"></a>
+  <a class="app" data-name="Human Design Academy beta" href="https://testflight.apple.com/join/CxrK3NDW" target="_blank" rel="noopener" aria-label="Human Design Academy, join the beta on TestFlight"><img src="assets/human-design-academy.png" alt="" width="256" height="256"></a>
+</nav>
 
 <script>
 (function(){
