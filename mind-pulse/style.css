@@ -53,6 +53,7 @@ p{max-width:60ch}
 .themes figure:nth-child(even) h3{color:var(--neon)}
 .themes figcaption p{font-size:1rem;color:rgba(220,230,204,.75)}
 .crazy{margin-top:clamp(5rem,11vw,8rem);padding-top:2rem;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(10rem,1fr) 2fr;gap:2rem}
+.crazy.keys{margin-top:2rem}
 .crazy h3{font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:1.3rem;color:var(--gold)}
 
 /* ways to play */
