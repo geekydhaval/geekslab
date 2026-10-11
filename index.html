@@ -34,7 +34,8 @@ body{
   -webkit-mask-image:linear-gradient(90deg,transparent 45%,#000 75%);mask-image:linear-gradient(90deg,transparent 45%,#000 75%)}
 canvas#world{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;outline:none}
 canvas#world.dragging{cursor:grabbing}
-canvas#world.over-head{cursor:alias}
+canvas#world.over-head{cursor:pointer}
+canvas#world.over-head.dragging{cursor:grabbing}
 canvas#world.over-hit{cursor:pointer}
 
 /* brand */
