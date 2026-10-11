@@ -46,12 +46,12 @@ const rr = (a, b) => a + (b - a) * rnd();
 const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
 
 /* ---------------------------------------------------- the world's layout */
-const R = 44;                    // island half-diagonal (diamond)
+const R = 74;                    // half-size of the populated world (a square; the ground runs on past it)
 const HEAD_POS = new THREE.Vector3(3.5, 0, 1.5);
 const HDA_POS = new THREE.Vector3(-13, 0, -7);
 const POND = { x: -26, z: 6, r: 5.5 };
 const ROAD = { cx: 22, cz: 2, rx: 11, rz: 8 };
-const inIsland = (x, z, m = 2.5) => Math.abs(x) + Math.abs(z) < R - m;
+const inIsland = (x, z, m = 2.5) => Math.abs(x) < R - m && Math.abs(z) < R - m;
 const uTime = { value: 0 };
 const anim = [];   // per-frame updaters
 
@@ -103,6 +103,10 @@ function fitView() {
   camera.updateProjectionMatrix();
 }
 fitView();
+function minZoom() {
+  const a = innerWidth / innerHeight, hh = view.size / 2;
+  return Math.max((hh * a) / (R - 1), hh / Math.sin(ELEV) / (R - 1));
+}
 function placeCamera() {
   camera.position.copy(target).add(camOffset);
   camera.lookAt(target);
@@ -113,12 +117,13 @@ placeCamera();
 const hemi = new THREE.HemisphereLight(0xfff6e0, 0x3b3550, 1.1);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff0d6, 2.0);
-sun.position.set(-38, 60, 30);
+const SUN_OFFSET = new THREE.Vector3(-38, 60, 30);
+sun.position.copy(SUN_OFFSET);
 sun.castShadow = true;
 sun.shadow.mapSize.set(small ? 1024 : 2048, small ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -52, right: 52, top: 52, bottom: -52, near: 10, far: 160 });
 sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.04;
-scene.add(sun);
+scene.add(sun); scene.add(sun.target);
 const neonA = new THREE.PointLight(0x41f0e2, 60, 40, 1.6); neonA.position.set(20, 7, 4); scene.add(neonA);
 const neonB = new THREE.PointLight(0xff4fb3, 40, 36, 1.6); neonB.position.set(30, 6, -8); scene.add(neonB);
 
@@ -158,10 +163,8 @@ function worldShader(mat, inject) {
 const island = new THREE.Group();
 scene.add(island);
 {
-  const S = R * Math.SQRT2, T = 5;
-  const geo = new THREE.BoxGeometry(S, T, S, 1, 4, 1);
-  geo.translate(0, -T / 2, 0);
-  geo.rotateY(Math.PI / 4);
+  const geo = new THREE.PlaneGeometry(R * 6, R * 6);
+  geo.rotateX(-Math.PI / 2);
   const mat = worldShader(new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0 }), {
     color: /* glsl */`
       float t = splitT(vW);
@@ -268,14 +271,14 @@ function natureFree(x, z, r) {
 }
 function reserve(x, z, r) { natureSpots.push({ x, z, r }); }
 // keep space for the cabin, windmill, giraffe walk and the path
-reserve(-21, 17, 5); reserve(-31, -4, 4); reserve(-12, 13, 7.5);
+reserve(-21, 17, 5); reserve(-31, -4, 4); reserve(-12, 13, 7.5); reserve(-44, -24, 8.5); reserve(-52, 34, 4); reserve(-58, -48, 5);
 
 { // trees
   const trunkGeo = new THREE.CylinderGeometry(0.18, 0.28, 1, 6); trunkGeo.translate(0, 0.5, 0);
   const roundGeo = new THREE.IcosahedronGeometry(1, 0);
   const pineGeo = new THREE.ConeGeometry(1, 2.2, 7); pineGeo.translate(0, 1.1, 0);
   const trees = [];
-  for (let i = 0; i < 900 && trees.length < 95; i++) {
+  for (let i = 0; i < 9000 && trees.length < 330; i++) {
     const x = rr(-R, 1), z = rr(-R, R);
     const s = rr(0.8, 1.6);
     if (!natureFree(x, z, 1.2 * s)) continue;
@@ -316,10 +319,10 @@ reserve(-21, 17, 5); reserve(-31, -4, 4); reserve(-12, 13, 7.5);
 
 { // rocks, grass tufts, flowers
   const rockGeo = new THREE.DodecahedronGeometry(1, 0);
-  const rocks = new THREE.InstancedMesh(rockGeo, M.rock, 40);
+  const rocks = new THREE.InstancedMesh(rockGeo, M.rock, 120);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
   let n = 0;
-  for (let i = 0; i < 400 && n < 40; i++) {
+  for (let i = 0; i < 3000 && n < 120; i++) {
     const x = rr(-R, 0), z = rr(-R, R), s = rr(0.3, 1.1);
     if (!natureFree(x, z, s)) continue;
     q.setFromEuler(new THREE.Euler(rnd() * 3, rnd() * 3, rnd() * 3));
@@ -330,10 +333,10 @@ reserve(-21, 17, 5); reserve(-31, -4, 4); reserve(-12, 13, 7.5);
 
   const tuftGeo = new THREE.ConeGeometry(0.12, 0.6, 4); tuftGeo.translate(0, 0.3, 0);
   const tuftMat = sway(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), 0.12);
-  const tufts = new THREE.InstancedMesh(tuftGeo, tuftMat, 900);
+  const tufts = new THREE.InstancedMesh(tuftGeo, tuftMat, 3200);
   const c = new THREE.Color();
   n = 0;
-  for (let i = 0; i < 5000 && n < 900; i++) {
+  for (let i = 0; i < 30000 && n < 3200; i++) {
     const x = rr(-R, 3), z = rr(-R, R);
     if (!inIsland(x, z, 1)) continue;
     if (x > -1 + Math.sin(z * 0.3) * 2) continue;
@@ -349,15 +352,15 @@ reserve(-21, 17, 5); reserve(-31, -4, 4); reserve(-12, 13, 7.5);
   // flowers: stem + head
   const fGeo = new THREE.IcosahedronGeometry(0.16, 0); fGeo.translate(0, 0.55, 0);
   const sGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.55, 3); sGeo.translate(0, 0.27, 0);
-  const flowers = new THREE.InstancedMesh(fGeo, sway(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, flatShading: true }), 0.1), 260);
-  const stems = new THREE.InstancedMesh(sGeo, sway(new THREE.MeshStandardMaterial({ color: 0x4d7f37 }), 0.1), 260);
+  const flowers = new THREE.InstancedMesh(fGeo, sway(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, flatShading: true }), 0.1), 800);
+  const stems = new THREE.InstancedMesh(sGeo, sway(new THREE.MeshStandardMaterial({ color: 0x4d7f37 }), 0.1), 800);
   n = 0;
-  for (let i = 0; i < 4000 && n < 260; i++) {
+  for (let i = 0; i < 12000 && n < 800; i++) {
     // flowers grow in little patches
     const cx = rr(-R, -2), cz = rr(-R, R);
     if (!natureFree(cx, cz, 0.3)) continue;
     const col = pick([0xf6e05e, 0xf28fb0, 0xffffff, 0xb79cf2, 0xff9a5c]);
-    for (let k = 0; k < 6 && n < 260; k++) {
+    for (let k = 0; k < 6 && n < 800; k++) {
       const x = cx + rr(-1.2, 1.2), z = cz + rr(-1.2, 1.2), s = rr(0.7, 1.3);
       m4.compose(new THREE.Vector3(x, 0, z), q.identity(), new THREE.Vector3(s, s, s));
       flowers.setMatrixAt(n, m4); flowers.setColorAt(n, c.set(col)); stems.setMatrixAt(n++, m4);
@@ -464,6 +467,14 @@ function ribbon(points, width, mat, y = 0.03, closed = false) {
   shadowed(mill); island.add(mill);
   addTag(mill, 'Windmill', 'energy, the old way', 'nature', 8.5);
   anim.push((t, dt) => { hub.rotation.z -= dt * 0.6; });
+  // a second windmill and cabin further out in the countryside
+  const cleanClone = (o) => { const saved = []; o.traverse((c) => { saved.push([c, c.userData]); c.userData = {}; }); const k = o.clone(); saved.forEach(([c, d]) => (c.userData = d)); return k; };
+  const mill2 = cleanClone(mill); mill2.position.set(-52, 0, 34); mill2.rotation.y = 0.2; island.add(mill2);
+  const hub2 = mill2.children[2];
+  anim.push((t, dt) => { hub2.rotation.z -= dt * 0.45; });
+  addTag(mill2, 'Windmill', 'grinding grain since 1890', 'nature', 8.5);
+  const cabin2 = cleanClone(cabin); cabin2.position.set(-58, 0, -48); cabin2.rotation.y = -0.4; island.add(cabin2);
+  addTag(cabin2, 'Reading cabin', 'books, no Wi-Fi', 'nature', 4.5);
 }
 
 /* -------------------------------------------------------------- giraffes */
@@ -545,6 +556,9 @@ function walker(creature, cx, cz, rx, rz, speed, label) {
 }
 walker(makeGiraffe(false), -12, 13, 5.5, 3.2, 0.12, ['Giraffe', 'grazing since forever', 'nature']);
 walker(makeGiraffe(true), 13, -14, 5, 2.6, -0.16, ['Robo-giraffe', 'firmware v2.6', 'future']);
+walker(makeGiraffe(false), -44, -24, 6, 3.5, 0.1, ['Giraffe', 'a slow afternoon', 'nature']);
+walker(makeGiraffe(true), 45, 30, 5, 3, 0.14, ['Robo-giraffe', 'firmware v3.1', 'future']);
+walker(makeGiraffe(true), 40, -40, 4.5, 2.5, -0.13, ['Robo-giraffe', 'charging soon', 'future']);
 
 /* ---------------------------------------------------------- future side */
 const blinkers = []; // instanced LEDs that blink
@@ -610,6 +624,8 @@ smartHome(9, 15, -0.3, 0xff4fb3);
 smartHome(25, 14.5, 0.2, 0x41f0e2);
 smartHome(36.5, 1, Math.PI / 2 - 0.1, 0x9b7bff);
 smartHome(22, -12, Math.PI, 0xffd34f);
+const EXTRA_HOMES = [[48, -30, 0.4, 0x41f0e2], [56, 22, -0.2, 0xff4fb3], [40, 44, 0.1, 0x9b7bff], [28, -46, 0.6, 0x7cff6b], [62, -6, -0.5, 0xffd34f], [16, 40, 0.2, 0x41f0e2], [60, 52, 0.3, 0xff4fb3], [52, -56, -0.3, 0x9b7bff]];
+EXTRA_HOMES.forEach(([x, z, r, c]) => smartHome(x, z, r, c));
 
 { // energy pylons along the back edge with glowing cables
   const pts = [[14, -24], [22, -18], [30, -11], [37, -4]];
@@ -654,16 +670,16 @@ smartHome(22, -12, Math.PI, 0xffd34f);
 }
 
 { // light trees: the future's version of a forest, plus street lamps and server cubes
-  const taken = [{ x: ROAD.cx, z: ROAD.cz, r: ROAD.rx + 2.5 }, { x: 9, z: 15, r: 3.5 }, { x: 25, z: 14.5, r: 3.5 }, { x: 36.5, z: 1, r: 3.5 }, { x: 22, z: -12, r: 3.5 }, { x: 13, z: -14, r: 7 }, { x: 33, z: 9.5, r: 3.5 }, { x: HEAD_POS.x, z: HEAD_POS.z, r: 6 }];
+  const taken = [{ x: ROAD.cx, z: ROAD.cz, r: ROAD.rx + 2.5 }, { x: 9, z: 15, r: 3.5 }, { x: 25, z: 14.5, r: 3.5 }, { x: 36.5, z: 1, r: 3.5 }, { x: 22, z: -12, r: 3.5 }, { x: 13, z: -14, r: 7 }, { x: 33, z: 9.5, r: 3.5 }, { x: HEAD_POS.x, z: HEAD_POS.z, r: 6 }, { x: 45, z: 30, r: 7 }, { x: 40, z: -40, r: 7 }, ...EXTRA_HOMES.map(([x, z]) => ({ x, z, r: 3.5 }))];
   const free = (x, z, r) => inIsland(x, z, 2 + r) && x > 6 + Math.sin(z * 0.3) * 2 && taken.every((t) => Math.hypot(x - t.x, z - t.z) > t.r + r);
   const coneGeo = new THREE.ConeGeometry(0.8, 2.6, 4, 1); coneGeo.translate(0, 1.7, 0);
   const stemGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.6, 4); stemGeo.translate(0, 0.3, 0);
-  const lt = new THREE.InstancedMesh(coneGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.35, flatShading: true, transparent: true, opacity: 0.85 }), 60);
-  const st = new THREE.InstancedMesh(stemGeo, M.steelLight, 60);
-  const wire = new THREE.InstancedMesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, toneMapped: false }), 60);
+  const lt = new THREE.InstancedMesh(coneGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.35, flatShading: true, transparent: true, opacity: 0.85 }), 170);
+  const st = new THREE.InstancedMesh(stemGeo, M.steelLight, 170);
+  const wire = new THREE.InstancedMesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, toneMapped: false }), 170);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color();
   let n = 0;
-  for (let i = 0; i < 2000 && n < 42; i++) {
+  for (let i = 0; i < 9000 && n < 165; i++) {
     const x = rr(4, R), z = rr(-R, R), s = rr(0.55, 1.1);
     if (!free(x, z, 1.1 * s)) continue;
     taken.push({ x, z, r: 1.3 * s });
@@ -678,10 +694,10 @@ smartHome(22, -12, Math.PI, 0xffd34f);
   lt.castShadow = true; island.add(lt, st, wire);
   // server cubes
   const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
-  const cubes = new THREE.InstancedMesh(cubeGeo, M.black, 26);
-  const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.02, 0.06, 1.02), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), 26);
+  const cubes = new THREE.InstancedMesh(cubeGeo, M.black, 80);
+  const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.02, 0.06, 1.02), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), 80);
   n = 0;
-  for (let i = 0; i < 2000 && n < 26; i++) {
+  for (let i = 0; i < 6000 && n < 80; i++) {
     const x = rr(6, R), z = rr(-R, R), s = rr(0.5, 1.0);
     if (!free(x, z, s)) continue;
     taken.push({ x, z, r: s });
@@ -781,7 +797,7 @@ function makeCar(color, glow) {
 }
 
 { // floating particles: fireflies on the left, data motes on the right
-  const N = 220;
+  const N = 520;
   const pos = new Float32Array(N * 3), col = new Float32Array(N * 3), seedA = new Float32Array(N);
   for (let i = 0; i < N; i++) {
     const left = i < N / 2;
@@ -1371,11 +1387,18 @@ function frame() {
 
   // camera: inertia, bounds, zoom
   if (state.mode !== 'pan') { target.x += state.vel.x; target.z += state.vel.y; state.vel.multiplyScalar(0.92); }
-  const lim = R - 8;
-  const m = Math.abs(target.x) + Math.abs(target.z);
-  if (m > lim) { target.x *= lim / m; target.z *= lim / m; }
+  // never zoom out past the populated world, and never pan to its edge
+  view.zoomGoal = Math.max(view.zoomGoal, minZoom());
   view.zoom += (view.zoomGoal - view.zoom) * 0.12;
-  fitView(); placeCamera();
+  fitView();
+  {
+    const hh = (camera.top - camera.bottom) / 2, hw = (camera.right - camera.left) / 2, hd = hh / Math.sin(ELEV);
+    const lx = Math.max(0, R - 1 - hw), lz = Math.max(0, R - 1 - hd);
+    target.x = THREE.MathUtils.clamp(target.x, -lx, lx);
+    target.z = THREE.MathUtils.clamp(target.z, -lz, lz);
+  }
+  placeCamera();
+  sun.position.copy(target).add(SUN_OFFSET); sun.target.position.copy(target); sun.target.updateMatrixWorld();
 
   // head: drag to turn, it keeps spinning a little, then settles back to face you
   state.idle += dt;
