@@ -2,227 +2,163 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>geekslab</title>
-<meta name="description" content="geekslab by Dhaval — tech and AI explained in Gujarati, balanced between nature and the future.">
+<meta name="description" content="geekslab — tech and AI explained in Gujarati, balanced between nature and the future. स्थितप्रज्ञ.">
 <meta property="og:title" content="geekslab">
-<meta property="og:description" content="Tech and AI explained in Gujarati. Nature on one side, the future on the other, balanced in the centre.">
-<meta name="theme-color" content="#14102E">
+<meta property="og:description" content="A small world where nature and the future meet. Drag around it.">
+<meta name="theme-color" content="#11131f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,100&family=Chakra+Petch:wght@400;600;700&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --moss:#24402A;
-    --sage:#DCE6CC;
-    --lichen:#A9BE7B;
-    --ink:#14102E;
-    --neon:#FF3DAE;
-    --ice:#53E3FF;
-    --gold:#E7B24A;
-    --split:50;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--ink);color:var(--sage);font-family:"Fraunces",Georgia,serif;font-size:1.125rem;line-height:1.6;-webkit-font-smoothing:antialiased}
-  a{color:inherit}
-  :focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:2px}
+:root{
+  --ink:#1f2a1c; --ink-soft:#4b5a45; --leaf:#5f8f4e; --sand:#efe7d4;
+  --night:#0d0f1c; --neon:#4ff5e8; --magenta:#ff4fb3; --ink-light:#e9ecff;
+  --hda:#f26b3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  background:#0d0f1c;
+  font-family:"Chakra Petch",system-ui,sans-serif;color:var(--ink);
+  -webkit-font-smoothing:antialiased;touch-action:none;
+}
+#sky{position:fixed;inset:0;
+  background:
+    radial-gradient(120% 90% at 8% 20%, #fbf4e1 0%, #e9e2c8 30%, rgba(233,226,200,0) 62%),
+    radial-gradient(110% 90% at 96% 18%, #2a1f52 0%, #151633 40%, rgba(21,22,51,0) 70%),
+    linear-gradient(100deg,#e7e3cc 0%,#cfd8c0 32%,#7e8a9a 50%,#2a2b4a 66%,#10111f 100%);
+}
+#stars{position:fixed;inset:0;pointer-events:none;opacity:.9;
+  -webkit-mask-image:linear-gradient(90deg,transparent 45%,#000 75%);mask-image:linear-gradient(90deg,transparent 45%,#000 75%)}
+canvas#world{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;outline:none}
+canvas#world.dragging{cursor:grabbing}
+canvas#world.over-head{cursor:alias}
+canvas#world.over-hit{cursor:pointer}
 
-  /* ---------- HERO: the split ---------- */
-  .hero{position:relative;height:100svh;min-height:560px;overflow:hidden;cursor:ew-resize;touch-action:pan-y;user-select:none}
-  .half{position:absolute;inset:0;display:grid;place-items:center}
-  .nature{background:var(--sage);color:var(--moss);clip-path:inset(0 calc(100% - var(--split)*1%) 0 0)}
-  .cyber{background:var(--ink);color:var(--ice);clip-path:inset(0 0 0 calc(var(--split)*1%))}
-  .nature::before{content:"";position:absolute;inset:0;opacity:.55;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23A9BE7B' stroke-width='1.2'%3E%3Cpath d='M-20 120C80 60 180 180 300 110S520 40 620 130'/%3E%3Cpath d='M-20 170C90 110 190 230 300 160S520 90 620 180'/%3E%3Cpath d='M-20 220C100 160 200 280 300 210S520 140 620 230'/%3E%3Cpath d='M-20 330C80 280 220 400 320 330S520 270 620 340'/%3E%3Cpath d='M-20 380C90 330 230 450 320 380S520 320 620 390'/%3E%3Cpath d='M-20 490C120 430 210 560 330 490S520 440 620 500'/%3E%3Cpath d='M-20 540C120 480 210 610 330 540S520 490 620 550'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:600px 600px}
-  .cyber::before{content:"";position:absolute;inset:0;
-    background:
-      repeating-linear-gradient(0deg,rgba(83,227,255,.06) 0 1px,transparent 1px 4px),
-      linear-gradient(rgba(255,61,174,.16) 1px,transparent 1px) 0 0/48px 48px,
-      linear-gradient(90deg,rgba(255,61,174,.16) 1px,transparent 1px) 0 0/48px 48px;
-    mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 80%,transparent)}
-  .word{position:relative;font-size:clamp(4rem,17vw,15rem);line-height:.9;letter-spacing:-.02em;white-space:nowrap}
-  .nature .word{font-family:"Fraunces",serif;font-weight:400;font-variation-settings:"SOFT" 100,"opsz" 144;font-style:italic}
-  .cyber .word{font-family:"Chakra Petch",sans-serif;font-weight:700;letter-spacing:-.03em;text-shadow:3px 0 0 var(--neon),-3px 0 0 rgba(83,227,255,.5)}
-  .tag{position:absolute;bottom:clamp(5rem,14vh,8rem);font-size:clamp(.95rem,1.6vw,1.15rem);max-width:22ch}
-  .nature .tag{left:clamp(1rem,5vw,4rem);font-style:italic}
-  .cyber .tag{right:clamp(1rem,5vw,4rem);text-align:right;font-family:"Chakra Petch",sans-serif;color:var(--neon)}
+/* brand */
+.brand{position:fixed;left:clamp(16px,3vw,40px);top:clamp(16px,3vw,36px);z-index:5;pointer-events:none;max-width:min(440px,80vw)}
+.brand h1{font-family:Fraunces,serif;font-weight:600;font-variation-settings:"SOFT" 100,"opsz" 144;
+  font-size:clamp(34px,5.2vw,64px);letter-spacing:-.02em;line-height:.9;color:var(--ink)}
+.brand h1 .dot{color:var(--leaf)}
+.brand h1 .si{font-family:"Chakra Petch";font-weight:600;font-size:.42em;letter-spacing:.04em;color:#6b5bd6;vertical-align:.9em;margin-left:.1em}
+.brand p{margin-top:12px;font-size:clamp(13px,1.1vw,15px);line-height:1.45;color:var(--ink-soft);max-width:34ch}
+.brand .sk{font-family:"Tiro Devanagari Sanskrit",serif;font-size:1.25em;color:var(--ink);white-space:nowrap}
 
-  .seam{position:absolute;top:0;bottom:0;left:calc(var(--split)*1%);width:0;pointer-events:none;z-index:3}
-  .seam::before{content:"";position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--gold);box-shadow:0 0 18px rgba(231,178,74,.7)}
-  .mark{position:absolute;top:clamp(1.25rem,4vh,2.5rem);left:0;transform:translateX(-50%);
-    background:var(--gold);color:var(--ink);font-family:"Tiro Devanagari Sanskrit",serif;font-size:1.25rem;
-    padding:.35rem 1rem .2rem;border-radius:999px;white-space:nowrap}
-  .hint{position:absolute;bottom:6.6rem;left:0;transform:translateX(-50%);font-family:"Chakra Petch",sans-serif;
-    font-size:.85rem;color:var(--ink);background:var(--gold);padding:.3rem .8rem;border-radius:999px;white-space:nowrap;transition:opacity .6s}
-  .hero.touched .hint{opacity:0}
+.legend{position:fixed;right:clamp(16px,3vw,40px);top:clamp(18px,3vw,38px);z-index:5;text-align:right;
+  color:var(--ink-light);font-size:12px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;opacity:.85}
+.legend b{display:block;font-weight:600;color:var(--neon);letter-spacing:.2em;font-size:11px;margin-bottom:6px}
+.legend span{display:block;line-height:1.7;opacity:.8}
 
-  /* ---------- DOCK: the apps, always at the bottom ---------- */
-  .dock{position:fixed;left:50%;bottom:max(.9rem,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:10;
-    display:flex;align-items:flex-end;gap:.7rem;padding:.6rem .75rem;border-radius:1.6rem;
-    background:rgba(20,16,46,.58);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
-    border:1px solid rgba(220,230,204,.24);box-shadow:0 14px 44px rgba(0,0,0,.45)}
-  .dock .app{position:relative;display:block;width:3.4rem;height:3.4rem;transform-origin:bottom center;
-    transition:transform .18s cubic-bezier(.2,.8,.2,1)}
-  .dock img{display:block;width:100%;height:100%;border-radius:23%;box-shadow:0 4px 12px rgba(0,0,0,.35)}
-  .dock .app:hover,.dock .app:focus-visible{transform:scale(1.3) translateY(-.15rem)}
-  .dock .app:has(+ .app:hover),.dock .app:hover + .app{transform:scale(1.12)}
-  .dock .app::after{content:attr(data-name);position:absolute;left:50%;bottom:calc(100% + .7rem);transform:translateX(-50%) scale(.77);
-    font-family:"Chakra Petch",sans-serif;font-size:.85rem;font-weight:600;line-height:1;white-space:nowrap;
-    background:var(--gold);color:var(--ink);padding:.4rem .7rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .15s}
-  .dock .app:hover::after,.dock .app:focus-visible::after{opacity:1}
-  .dock .soon{cursor:default}
-  body:has(.dock .app:hover) .hint,body:has(.dock .app:focus-visible) .hint{opacity:0}
+.axis{position:fixed;bottom:118px;z-index:4;font-size:11px;letter-spacing:.32em;text-transform:uppercase;pointer-events:none;opacity:.7}
+.axis.past{left:clamp(16px,3vw,40px);color:var(--ink-soft)}
+.axis.future{right:clamp(16px,3vw,40px);color:var(--ink-light)}
 
-  /* ---------- BODY ---------- */
-  main{position:relative}
-  section{padding:clamp(4rem,10vw,8rem) clamp(1rem,6vw,5rem)}
-  .wrap{max-width:68rem;margin:0 auto}
-  h2{font-weight:500;font-size:clamp(2rem,5vw,3.5rem);line-height:1.08;letter-spacing:-.01em;font-variation-settings:"opsz" 144;max-width:18ch}
-  p{max-width:60ch}
-  .meaning{background:var(--sage);color:var(--moss)}
-  .meaning .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:end}
-  .sanskrit{font-family:"Tiro Devanagari Sanskrit",serif;font-size:clamp(3rem,9vw,6.5rem);line-height:1;color:var(--moss)}
-  .meaning p+p{margin-top:1rem}
-  .gloss{font-style:italic;margin-top:.5rem;color:#4E6B44}
+/* hint */
+.hint{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:5;pointer-events:none;
+  font-size:12px;letter-spacing:.08em;color:#fff;background:rgba(15,16,30,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:8px 14px;border-radius:999px;white-space:nowrap;transition:opacity .8s;border:1px solid rgba(255,255,255,.12)}
+.hint.gone{opacity:0}
 
-  .make h2{color:var(--sage)}
-  .rows{margin-top:clamp(2.5rem,5vw,4rem);border-top:1px solid rgba(220,230,204,.2)}
-  .row{display:grid;grid-template-columns:minmax(10rem,1fr) 2fr;gap:2rem;padding:1.75rem 0;border-bottom:1px solid rgba(220,230,204,.2)}
-  .row h3{font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:1.3rem;color:var(--ice)}
-  .row.green h3{font-family:"Fraunces",serif;font-style:italic;font-weight:500;color:var(--lichen)}
-  .row p{color:rgba(220,230,204,.82)}
+/* labels in the world */
+#labels{position:fixed;inset:0;pointer-events:none;z-index:3}
+.tag{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 9px 5px 8px;border-radius:6px;opacity:0;transition:opacity .25s, transform .25s;}
+.tag.show{opacity:1;transform:translate(-50%,calc(-100% - 6px))}
+.tag.nature{background:rgba(250,246,232,.92);color:var(--ink);border:1px solid rgba(60,80,40,.18)}
+.tag.future{background:rgba(12,14,30,.85);color:var(--neon);border:1px solid rgba(79,245,232,.35);box-shadow:0 0 18px rgba(79,245,232,.15)}
+.tag small{display:block;text-transform:none;letter-spacing:.02em;font-size:11px;opacity:.75;margin-top:2px}
 
-  .cta{background:linear-gradient(90deg,var(--sage) 0 50%,var(--ink) 50% 100%);padding:0}
-  .cta .inner{display:grid;grid-template-columns:1fr 1fr}
-  .cta .side{padding:clamp(4rem,9vw,7rem) clamp(1rem,5vw,4rem)}
-  .cta .left{color:var(--moss)}
-  .cta .right{color:var(--sage)}
-  .cta h2{font-size:clamp(1.8rem,4vw,2.8rem)}
-  .cta p{margin:1rem 0 2rem}
-  .btn{display:inline-block;text-decoration:none;font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:1.05rem;padding:.9rem 1.6rem;border-radius:999px;transition:transform .15s}
-  .btn:hover{transform:translateY(-2px)}
-  .btn.moss{background:var(--moss);color:var(--sage)}
-  .btn.neon{background:var(--neon);color:var(--ink)}
+/* dock */
+.dock-wrap{position:fixed;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:6;pointer-events:none}
+.dock{pointer-events:auto;display:flex;align-items:flex-end;gap:10px;padding:10px 12px;height:76px;border-radius:24px;
+  background:rgba(255,255,255,.16);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.28);box-shadow:0 10px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.25)}
+.app{--s:56px;position:relative;width:var(--s);height:var(--s);flex:none;display:block;border-radius:calc(var(--s)*.23);
+  transition:width .12s ease-out,height .12s ease-out;text-decoration:none;outline:none}
+.app img,.app .glyph{width:100%;height:100%;border-radius:inherit;display:block;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.app .glyph{display:grid;place-items:center;background:linear-gradient(135deg,#f9ce34 0%,#ee2a7b 50%,#6228d7 100%)}
+.app .glyph svg{width:58%;height:58%}
+.app::after{content:attr(data-name);position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%) translateY(4px);
+  background:rgba(20,22,36,.88);color:#fff;font-size:12px;letter-spacing:.02em;white-space:nowrap;padding:5px 10px;border-radius:7px;
+  opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
+.app:hover::after,.app:focus-visible::after{opacity:1;transform:translateX(-50%)}
+.app:focus-visible{box-shadow:0 0 0 3px var(--neon)}
+.app.soon img{filter:saturate(.8)}
+.app .pip{position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8);transform:translateX(-50%)}
+.app .badge{position:absolute;top:-6px;right:-8px;font-size:9px;letter-spacing:.08em;background:var(--magenta);color:#fff;padding:2px 5px;border-radius:5px;text-transform:uppercase}
 
-  footer{padding:2rem clamp(1rem,6vw,5rem) 7rem;font-family:"Chakra Petch",sans-serif;font-size:.9rem;color:rgba(220,230,204,.6);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+/* loader */
+#loader{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:linear-gradient(100deg,#efe8d3 0%,#9aa49a 50%,#13142a 100%);transition:opacity .9s .1s}
+#loader.done{opacity:0;pointer-events:none}
+#loader .ring{width:120px;height:2px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
+#loader .ring i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5f8f4e,#4ff5e8);transition:width .3s}
+#loader p{margin-top:14px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#fff;text-align:center;mix-blend-mode:difference}
+#loader .sk{font-family:"Tiro Devanagari Sanskrit",serif;letter-spacing:0;text-transform:none;font-size:22px;display:block;margin-bottom:8px}
 
-  @media (max-width:760px){
-    .meaning .grid,.cta .inner{grid-template-columns:1fr}
-    .row{grid-template-columns:1fr;gap:.5rem}
-    .cta{background:none}
-    .cta .left{background:var(--sage)}
-    .cta .right{background:var(--ink)}
-    .tag{bottom:9.5rem;max-width:15ch;font-size:.9rem}
-    .dock .app{width:3rem;height:3rem}
-  }
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.hint,.dock .app{transition:none}}
+#fallback{display:none;position:fixed;inset:0;place-items:center;text-align:center;color:#fff;padding:24px;z-index:2}
+.no-webgl #fallback{display:grid}
+
+@media (max-width:640px){
+  .legend{display:none}
+  .axis{bottom:104px}
+  .dock{height:64px;gap:8px;padding:8px 10px;border-radius:20px}
+  .app{--s:46px}
+  .hint{bottom:98px;font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){ .app{transition:none} }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
 </head>
 <body>
+<div id="sky"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+<canvas id="world" tabindex="0" aria-label="An interactive world. Nature on the left, the future on the right, and Dhaval's head floating in the middle. Drag to explore."></canvas>
+<div id="labels" aria-hidden="true"></div>
 
-<header class="hero" id="hero" aria-label="geekslab — nature and future, balanced in the centre">
-  <div class="half nature" aria-hidden="true">
-    <span class="word">geekslab</span>
-    <p class="tag">Rooted in nature, slow, curious, human.</p>
-  </div>
-  <div class="half cyber">
-    <h1 class="word">geekslab</h1>
-    <p class="tag">Wired for the future: tech and AI, explained in Gujarati.</p>
-  </div>
-  <div class="seam" aria-hidden="true">
-    <span class="mark">स्थितप्रज्ञ</span>
-    <span class="hint">Drag to shift the balance</span>
-  </div>
+<header class="brand">
+  <h1>geekslab<span class="dot">.</span><span class="si">si</span></h1>
+  <p>Tech and AI, explained in Gujarati. Rooted in nature, wired for the future, balanced in the middle: <span class="sk">स्थितप्रज्ञ</span></p>
 </header>
 
-<main>
-  <section class="meaning">
-    <div class="wrap grid">
-      <div>
-        <div class="sanskrit" lang="sa">स्थितप्रज्ञ</div>
-        <p class="gloss">sthitaprajna: one whose mind stays steady</p>
-      </div>
-      <div>
-        <h2>Two halves. One steady centre.</h2>
-        <p style="margin-top:1.25rem">One side of geekslab is plants, soil and slow mornings. The other is AI, gadgets and whatever ships next week. I don't pick a side. I try to stand in the middle and stay calm while the world speeds up.</p>
-        <p>Let go of the seam above and watch where it settles.</p>
-      </div>
-    </div>
-  </section>
+<div class="legend" aria-hidden="true">
+  <b>Explore</b>
+  <span>Drag to move around</span>
+  <span>Drag the head to turn it</span>
+  <span>Scroll or pinch to zoom</span>
+</div>
 
-  <section class="make">
-    <div class="wrap">
-      <h2>What you'll find on the channel</h2>
-      <div class="rows">
-        <div class="row"><h3>Tech Dayro</h3><p>This week's tech news, told the way we talk at a dayro. Gujarati, fast, no jargon.</p></div>
-        <div class="row"><h3>AI tools you can use today</h3><p>Hands-on walkthroughs of the AI tools I teach my students, so you can try them the same evening.</p></div>
-        <div class="row"><h3>Behind the hype</h3><p>What a launch or a viral claim actually means for you, and what it doesn't.</p></div>
-        <div class="row green"><h3>Nature &amp; balance</h3><p>The other half. Slower stories about plants, attention and staying steady.</p></div>
-      </div>
-    </div>
-  </section>
+<div class="axis past" aria-hidden="true">← roots · nature</div>
+<div class="axis future" aria-hidden="true">future · digital →</div>
+<div class="hint" id="hint">Drag the world. Grab the head and turn it.</div>
 
-  <section class="cta">
-    <div class="inner">
-      <div class="side left">
-        <h2>Come say hi</h2>
-        <p>New reels every week on Instagram.</p>
-        <a class="btn moss" href="https://instagram.com/geekslab" target="_blank" rel="noopener">Follow @geekslab</a>
-      </div>
-      <div class="side right">
-        <h2>Work with geekslab</h2>
-        <p>Brand collabs, product launches and AI workshops for your team.</p>
-        <a class="btn neon" href="https://ig.me/m/geekslab" target="_blank" rel="noopener">Message me on Instagram</a>
-      </div>
-    </div>
-  </section>
-</main>
+<div class="dock-wrap">
+  <nav class="dock" id="dock" aria-label="Apps and links by geekslab">
+    <a class="app" data-name="Instagram · @geekslab" href="https://instagram.com/geekslab" target="_blank" rel="noopener" aria-label="geekslab on Instagram">
+      <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="#fff" stroke="none"/></svg></span>
+      <span class="pip"></span>
+    </a>
+    <span class="app soon" data-name="Mercury OS · coming soon" tabindex="0" role="img" aria-label="Mercury OS, coming soon">
+      <img src="assets/mercury-os.png" alt="" width="256" height="256"><span class="badge">soon</span>
+    </span>
+    <a class="app" data-name="Mind Pulse" href="mind-pulse/" aria-label="Mind Pulse">
+      <img src="assets/mind-pulse.png" alt="" width="256" height="256"><span class="pip"></span>
+    </a>
+    <a class="app" data-name="Human Design Academy · TestFlight beta" href="https://testflight.apple.com/join/CxrK3NDW" target="_blank" rel="noopener" aria-label="Human Design Academy app, join the beta on TestFlight">
+      <img src="assets/human-design-academy.png" alt="" width="256" height="256"><span class="pip"></span>
+    </a>
+  </nav>
+</div>
 
-<footer>
-  <span>geekslab, by Dhaval. Surat, Gujarat.</span>
-  <span>© <span id="yr">2026</span></span>
-</footer>
+<div id="loader"><div><p><span class="sk">स्थितप्रज्ञ</span></p><div class="ring"><i id="bar"></i></div><p id="ltext">growing the world</p></div></div>
+<div id="fallback"><div><h2 style="font-family:Fraunces;font-size:40px">geekslab</h2><p>This world needs WebGL. The apps are in the dock below.</p></div></div>
 
-<nav class="dock" aria-label="Apps by geekslab">
-  <span class="app soon" data-name="Mercury OS, coming soon" tabindex="0" role="img" aria-label="Mercury OS, coming soon"><img src="assets/mercury-os.png" alt="" width="256" height="256"></span>
-  <a class="app" data-name="Mind Pulse" href="mind-pulse/" aria-label="Mind Pulse"><img src="assets/mind-pulse.png" alt="" width="256" height="256"></a>
-  <a class="app" data-name="Human Design Academy beta" href="https://testflight.apple.com/join/CxrK3NDW" target="_blank" rel="noopener" aria-label="Human Design Academy, join the beta on TestFlight"><img src="assets/human-design-academy.png" alt="" width="256" height="256"></a>
-</nav>
-
-<script>
-(function(){
-  const hero = document.getElementById('hero');
-  const root = document.documentElement;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.getElementById('yr').textContent = new Date().getFullYear();
-  if (reduce) return;                       // stays balanced at 50
-  let target = 50, current = 50, raf = null;
-  function tick(){
-    current += (target - current) * 0.12;
-    root.style.setProperty('--split', current.toFixed(2));
-    if (Math.abs(target - current) > 0.05) raf = requestAnimationFrame(tick); else raf = null;
-  }
-  function go(){ if (!raf) raf = requestAnimationFrame(tick); }
-  function setFrom(x){
-    const r = hero.getBoundingClientRect();
-    target = Math.min(92, Math.max(8, (x - r.left) / r.width * 100));
-    hero.classList.add('touched'); go();
-  }
-  hero.addEventListener('pointermove', e => setFrom(e.clientX));
-  hero.addEventListener('pointerdown', e => setFrom(e.clientX));
-  // let go and it returns to the centre: sthitaprajna
-  ['pointerleave','pointerup','pointercancel'].forEach(t =>
-    hero.addEventListener(t, e => { if (t !== 'pointerup' || e.pointerType !== 'mouse') { target = 50; go(); } }));
-  // keyboard: arrow keys nudge, Home re-centres
-  hero.tabIndex = 0;
-  hero.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft') { target = Math.max(8, target - 6); go(); }
-    else if (e.key === 'ArrowRight') { target = Math.min(92, target + 6); go(); }
-    else if (e.key === 'Home') { target = 50; go(); }
-  });
-})();
-</script>
+<script type="module" src="main.js"></script>
 </body>
 </html>
