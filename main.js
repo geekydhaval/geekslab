@@ -31,13 +31,16 @@ try {
 // quality: software renderers and small screens get a lighter world
 const glInfo = (() => { try { const gl = renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : ''; } catch (e) { return ''; } })();
 const LOW = /swiftshader|llvmpipe|software/i.test(glInfo);
-renderer.setPixelRatio(LOW ? 1 : Math.min(devicePixelRatio, small ? 1.5 : 1.75));
+const MAX_DPR = LOW ? 1 : Math.min(devicePixelRatio, 1.5);
+let dpr = MAX_DPR;
+renderer.setPixelRatio(dpr);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false; // the world's shadows are baked once; moving things use soft blob shadows
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -124,15 +127,13 @@ placeCamera();
 const hemi = new THREE.HemisphereLight(0xdcefff, 0x4a6a2c, 0.95);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffe2b4, 2.15);
-const SUN_OFFSET = new THREE.Vector3(-38, 60, 30);
+const SUN_OFFSET = new THREE.Vector3(-38, 60, 30).multiplyScalar(1.6);
 sun.position.copy(SUN_OFFSET);
 sun.castShadow = true;
 sun.shadow.mapSize.set(LOW ? 1024 : small ? 2048 : 4096, LOW ? 1024 : small ? 2048 : 4096);
-Object.assign(sun.shadow.camera, { left: -58, right: 58, top: 58, bottom: -58, near: 10, far: 180 });
+Object.assign(sun.shadow.camera, { left: -R * 1.18, right: R * 1.18, top: R * 1.18, bottom: -R * 1.18, near: 5, far: 260 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.05; sun.shadow.radius = 3;
 scene.add(sun); scene.add(sun.target);
-const neonA = new THREE.PointLight(0x41f0e2, 60, 40, 1.6); neonA.position.set(20, 7, 4); scene.add(neonA);
-const neonB = new THREE.PointLight(0xff4fb3, 40, 36, 1.6); neonB.position.set(30, 6, -8); scene.add(neonB);
 
 /* -------------------------------------------------------- shader bits */
 const NOISE = /* glsl */`
@@ -236,6 +237,15 @@ const M = {
   solar: new THREE.MeshStandardMaterial({ color: 0x1b2d6b, roughness: 0.2, metalness: 0.8 }),
   hda: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffa36b, emissiveIntensity: 2.2 }),
 };
+const blobTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c);
+})();
+function blob(w, d) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: blobTex, transparent: true, depthWrite: false }));
+  m.position.y = 0.06; m.renderOrder = 1; return m;
+}
 function shadowed(o, cast = true, recv = true) { o.traverse((c) => { if (c.isMesh) { c.castShadow = cast; c.receiveShadow = recv; } }); return o; }
 function mesh(geo, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); return m; }
 
@@ -393,7 +403,7 @@ const noPick = (m) => { m.raycast = () => {}; return m; };
 }
 
 { // grass: thousands of blades that sway in the wind and lean away from your cursor
-  const N = LOW ? 8000 : small ? 26000 : 72000;
+  const N = LOW ? 8000 : small ? 22000 : 46000;
   const w = 0.07;
   const verts = [-w, 0, 0, w, 0, 0, -w * 0.75, 0.38, 0, w * 0.75, 0.38, 0, -w * 0.4, 0.72, 0, w * 0.4, 0.72, 0, 0, 1, 0];
   const g = new THREE.BufferGeometry();
@@ -663,7 +673,8 @@ function makeGiraffe(robot) {
   }
   const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 1.2, 4), skin); tail.position.set(-1.6, 3.0, 0); tail.rotation.z = -0.3; g.add(tail);
   g.scale.setScalar(0.9);
-  shadowed(g);
+  shadowed(g, false, true);
+  const gb = blob(4.2, 2.4); g.add(gb);
   return {
     group: g,
     update(t, speed) {
@@ -888,7 +899,7 @@ function makeCar(color, glow) {
   car.add(mesh(new THREE.BoxGeometry(0.06, 0.08, 1.15), M.neonRed, -1.28, 0.5, 0));
   const win = mesh(new THREE.BoxGeometry(1.0, 0.3, 1.18), M.glassDark, -0.2, 0.75, 0); win.rotation.z = -0.1; car.add(win);
   [[0.8, 0.6], [0.8, -0.6], [-0.8, 0.6], [-0.8, -0.6]].forEach(([x, z]) => { const w = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.12, 10), M.black, x, 0.22, z); w.rotation.x = Math.PI / 2; car.add(w); });
-  return shadowed(car);
+  shadowed(car, false, true); car.add(blob(3.2, 1.9)); return car;
 }
 {
   const cars = [
@@ -920,8 +931,9 @@ function makeCar(color, glow) {
     d.add(mesh(new THREE.SphereGeometry(0.06, 6, 5), (x > 0 ? M.neon : M.neonRed), x, 0.05, z));
   });
   const cam = mesh(new THREE.SphereGeometry(0.16, 10, 8), M.glassDark, 0, -0.16, 0.25); d.add(cam);
-  shadowed(d, true, false);
+  shadowed(d, false, false);
   island.add(d);
+  const db = blob(2.4, 2.4); island.add(db);
   addTag(d, 'Delivery drone', 'route 07 · on time', 'future', 0.8);
   anim.push((t) => {
     const a = t * 0.18;
@@ -929,6 +941,7 @@ function makeCar(color, glow) {
     d.rotation.y = -Math.atan2(Math.cos(a * 2) * 18, Math.cos(a) * 12);
     d.rotation.z = Math.sin(t) * 0.06;
     rotors.forEach((r) => (r.rotation.y += 0.9));
+    db.position.set(d.position.x, 0.07, d.position.z);
   });
 }
 
@@ -1022,7 +1035,7 @@ island.add(hda);
     g.translate(-c.x, -c.y, -c.z); g.scale(1, -1, 1);
     const s = 3.0 / (bb.max.y - bb.min.y); g.scale(s, s, s);
     const H = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xffe2cc, emissive: 0xff6a2b, emissiveIntensity: 0.55, metalness: 0.4, roughness: 0.25 }));
-    H.castShadow = true; hGroup.add(H);
+    hGroup.add(H);
   }).catch(() => {}));
   anim.push((t, dt) => { hGroup.rotation.y += dt * 0.7; hGroup.position.y = ROOF + 4.2 + Math.sin(t * 1.4) * 0.15; });
 
@@ -1039,8 +1052,6 @@ island.add(hda);
   }
   loadGLB('models/hda_pod.glb').then((g) => { const o = g.scene; fitInside(o, RAD - 0.9, F1 + 0.14); o.rotation.y = 0.4; hda.add(o); }).catch(() => {});
   loadGLB('models/hda_class.glb').then((g) => { const o = g.scene; fitInside(o, RAD - 0.6, F2 + 0.14); hda.add(o); }).catch(() => {});
-  const glow = new THREE.PointLight(0xffc89a, 2.2, 9, 1.8); glow.position.set(0, 3.5, 0); hda.add(glow);
-  const glow2 = new THREE.PointLight(0xffc89a, 1.8, 8, 1.8); glow2.position.set(0, 8, 0); hda.add(glow2);
   // planters around the base
   for (let i = 0; i < 9; i++) {
     const a = i / 9 * Math.PI * 2 + 0.3;
@@ -1325,8 +1336,11 @@ function buildHeadDetails(meshes, size) {
   tmpMesh.geometry.dispose();
 }
 
+let headTick = 0;
 function updateHeadDetails(t, dt) {
   if (!leafInst.mesh) return;
+  const busy = headUniforms.uHoverN.value > 0.02 || headUniforms.uHoverC.value > 0.02 || headUniforms.uReveal.value < 1;
+  if (!busy && (headTick++ % 3)) return;
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), s = new THREE.Vector3();
   const hp = headUniforms.uHoverP.value, hn = headUniforms.uHoverN.value, rev = headUniforms.uReveal.value;
   const size = 1;
@@ -1374,7 +1388,7 @@ loadGLB(HEAD.url).then((g) => {
     if (!o.isMesh) return;
     o.userData.quant = o.matrixWorld.clone();      // node transform = dequantization
     headUniforms.uQuant.value.copy(o.matrixWorld);
-    headMeshes.push(o); patchHeadMaterial(o.material); o.castShadow = true; o.receiveShadow = true;
+    headMeshes.push(o); patchHeadMaterial(o.material); o.castShadow = false; o.receiveShadow = false;
   });
   headModel.add(root);
   // size: from the cut at the neck to the top of the hair
@@ -1396,7 +1410,7 @@ const headEntry = addTag(headFloat, 'Dhaval', 'nature on one side, the future on
 headEntry.isHead = true;
 
 /* ---------------------------------------------------------- post FX */
-const msaaTarget = new THREE.WebGLRenderTarget(innerWidth * renderer.getPixelRatio(), innerHeight * renderer.getPixelRatio(), { type: THREE.HalfFloatType, samples: LOW ? 0 : small ? 2 : 4 });
+const msaaTarget = new THREE.WebGLRenderTarget(innerWidth * renderer.getPixelRatio(), innerHeight * renderer.getPixelRatio(), { type: THREE.HalfFloatType, samples: LOW ? 0 : devicePixelRatio > 1.4 ? 2 : 4 });
 const composer = new EffectComposer(renderer, msaaTarget);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.6, 0.3, 1.6);
@@ -1482,10 +1496,13 @@ canvas.addEventListener('pointermove', (e) => {
     state.headYaw += state.headVel.x; state.headPitch = THREE.MathUtils.clamp(state.headPitch + state.headVel.y, -0.45, 0.45);
     state.moved += Math.abs(dx) + Math.abs(dy); state.idle = 0;
   } else {
-    // hover
-    const p = pick3D(e);
-    const entry = p && p.entry;
-    setHovered(entry, p);
+    // hover (throttled: raycasting the whole world is not free)
+    const now = performance.now();
+    if (now - (state.lastPick || 0) > 50) {
+      state.lastPick = now;
+      const p = pick3D(e);
+      setHovered(p && p.entry, p);
+    }
   }
   state.last = { x: e.clientX, y: e.clientY };
 });
@@ -1532,6 +1549,28 @@ function setHovered(entry, p) {
 }
 
 /* ------------------------------------------------------------ loop */
+// keeps the frame rate up: if frames get slow, render at a slightly lower resolution (and back up when there is room)
+const perf = {
+  acc: 0, n: 0, cool: 0, el: null,
+  tick(dt) {
+    this.acc += dt; this.n++;
+    if (this.n < 45) return;
+    const ms = (this.acc / this.n) * 1000; this.acc = 0; this.n = 0;
+    if (this.el) this.el.textContent = `${Math.round(1000 / ms)} fps · ${dpr.toFixed(2)}x`;
+    if (this.cool-- > 0) return;
+    let next = dpr;
+    if (ms > 21) next = Math.max(0.6, dpr * 0.85);
+    else if (ms < 13 && dpr < MAX_DPR) next = Math.min(MAX_DPR, dpr * 1.1);
+    if (Math.abs(next - dpr) > 0.01) {
+      dpr = next; renderer.setPixelRatio(dpr); composer.setPixelRatio(dpr);
+      renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); this.cool = 2;
+    }
+  },
+};
+if (/[?&]fps\b/.test(location.search)) {
+  perf.el = Object.assign(document.createElement('div'), { style: 'position:fixed;left:12px;bottom:12px;z-index:30;font:600 12px Chakra Petch,monospace;color:#fff;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:6px' });
+  document.body.appendChild(perf.el);
+}
 const clock = new THREE.Clock();
 const tmpV = new THREE.Vector3();
 let revealStart = null;
@@ -1554,7 +1593,6 @@ function frame() {
     target.z = THREE.MathUtils.clamp(target.z, -lz, lz);
   }
   placeCamera();
-  sun.position.copy(target).add(SUN_OFFSET); sun.target.position.copy(target); sun.target.updateMatrixWorld();
 
   // head: drag to turn, it keeps spinning a little, then settles back to face you
   state.idle += dt;
@@ -1597,6 +1635,7 @@ function frame() {
   }
 
   composer.render();
+  perf.tick(dt);
   requestAnimationFrame(frame);
 }
 
@@ -1626,6 +1665,8 @@ addEventListener('resize', () => {
 const startWhenReady = () => {
   if (loading.done >= loading.total) {
     document.getElementById('loader').classList.add('done');
+    renderer.shadowMap.needsUpdate = true;                       // bake shadows once everything is in place
+    setTimeout(() => (renderer.shadowMap.needsUpdate = true), 1500);
     if (window.__shot) document.title = 'done';
   } else setTimeout(startWhenReady, 150);
 };
